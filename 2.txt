@@ -1,0 +1,187 @@
+[
+    Increment {
+        state: Shape {
+            c: 10,
+            f: 0x00007ff7a7917d00,
+        },
+    },
+    Loop {
+        stack: [
+            MoveRight {
+                state: Shape {
+                    c: 1,
+                    f: 0x00007ff7a7917a70,
+                },
+            },
+            Increment {
+                state: Shape {
+                    c: 7,
+                    f: 0x00007ff7a7917d00,
+                },
+            },
+            MoveRight {
+                state: Shape {
+                    c: 1,
+                    f: 0x00007ff7a7917a70,
+                },
+            },
+            Increment {
+                state: Shape {
+                    c: 10,
+                    f: 0x00007ff7a7917d00,
+                },
+            },
+            MoveRight {
+                state: Shape {
+                    c: 1,
+                    f: 0x00007ff7a7917a70,
+                },
+            },
+            Increment {
+                state: Shape {
+                    c: 3,
+                    f: 0x00007ff7a7917d00,
+                },
+            },
+            MoveRight {
+                state: Shape {
+                    c: 1,
+                    f: 0x00007ff7a7917a70,
+                },
+            },
+            Increment {
+                state: Shape {
+                    c: 1,
+                    f: 0x00007ff7a7917d00,
+                },
+            },
+            MoveLeft {
+                state: Shape {
+                    c: 4,
+                    f: 0x00007ff7a7917af0,
+                },
+            },
+            Decrement {
+                state: Shape {
+                    c: 1,
+                    f: 0x00007ff7a79179e0,
+                },
+            },
+        ],
+    },
+    MoveRight {
+        state: Shape {
+            c: 1,
+            f: 0x00007ff7a7917a70,
+        },
+    },
+    Increment {
+        state: Shape {
+            c: 2,
+            f: 0x00007ff7a7917d00,
+        },
+    },
+    Output,
+    MoveRight {
+        state: Shape {
+            c: 1,
+            f: 0x00007ff7a7917a70,
+        },
+    },
+    Increment {
+        state: Shape {
+            c: 1,
+            f: 0x00007ff7a7917d00,
+        },
+    },
+    Output,
+    Increment {
+        state: Shape {
+            c: 7,
+            f: 0x00007ff7a7917d00,
+        },
+    },
+    Output,
+    Output,
+    Increment {
+        state: Shape {
+            c: 3,
+            f: 0x00007ff7a7917d00,
+        },
+    },
+    Output,
+    MoveRight {
+        state: Shape {
+            c: 1,
+            f: 0x00007ff7a7917a70,
+        },
+    },
+    Increment {
+        state: Shape {
+            c: 2,
+            f: 0x00007ff7a7917d00,
+        },
+    },
+    Output,
+    MoveLeft {
+        state: Shape {
+            c: 2,
+            f: 0x00007ff7a7917af0,
+        },
+    },
+    Increment {
+        state: Shape {
+            c: 15,
+            f: 0x00007ff7a7917d00,
+        },
+    },
+    Output,
+    MoveRight {
+        state: Shape {
+            c: 1,
+            f: 0x00007ff7a7917a70,
+        },
+    },
+    Output,
+    Increment {
+        state: Shape {
+            c: 3,
+            f: 0x00007ff7a7917d00,
+        },
+    },
+    Output,
+    Decrement {
+        state: Shape {
+            c: 6,
+            f: 0x00007ff7a79179e0,
+        },
+    },
+    Output,
+    Decrement {
+        state: Shape {
+            c: 8,
+            f: 0x00007ff7a79179e0,
+        },
+    },
+    Output,
+    MoveRight {
+        state: Shape {
+            c: 1,
+            f: 0x00007ff7a7917a70,
+        },
+    },
+    Increment {
+        state: Shape {
+            c: 1,
+            f: 0x00007ff7a7917d00,
+        },
+    },
+    Output,
+    MoveRight {
+        state: Shape {
+            c: 1,
+            f: 0x00007ff7a7917a70,
+        },
+    },
+    Output,
+]Hello World!
