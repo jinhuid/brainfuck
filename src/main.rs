@@ -156,19 +156,19 @@ impl Code {
         self.exprs = crt_exprs;
     }
     fn run(&mut self) {
-        fn execute(exprs: &mut Vec<Expr>, pointer: &mut Store) {
+        fn execute(exprs: &mut Vec<Expr>, store: &mut Store) {
             for e in exprs.iter_mut() {
                 match e {
-                    Expr::Increment(count) => pointer.increment(*count),
-                    Expr::Decrement(count) => pointer.decrement(*count),
-                    Expr::MoveRight(count) => pointer.move_right(*count),
-                    Expr::MoveLeft(count) => pointer.move_left(*count),
-                    Expr::MakeZero => pointer.codepoints[pointer.idx] = 0,
-                    Expr::Output => pointer.print(),
-                    Expr::Input => pointer.read(),
+                    Expr::Increment(count) => store.increment(*count),
+                    Expr::Decrement(count) => store.decrement(*count),
+                    Expr::MoveRight(count) => store.move_right(*count),
+                    Expr::MoveLeft(count) => store.move_left(*count),
+                    Expr::MakeZero => store.codepoints[store.idx] = 0,
+                    Expr::Output => store.print(),
+                    Expr::Input => store.read(),
                     Expr::Loop { exprs } => {
-                        while pointer.codepoints[pointer.idx] != 0 {
-                            execute(exprs, pointer)
+                        while store.codepoints[store.idx] != 0 {
+                            execute(exprs, store)
                         }
                     }
                 }
