@@ -107,7 +107,7 @@ impl Code {
             exprs: vec![],
         }
     }
-    fn pre_resolving(&mut self) {
+    fn pre_parsing(&mut self) {
         let mut track_stk: Vec<Vec<Expr>> = Vec::new();
         let mut crt_exprs: Vec<Expr> = Vec::new();
 
@@ -184,7 +184,7 @@ fn main() {
     let filename = env::current_dir().unwrap().join(filepath);
     let content = std::fs::read_to_string(filename).unwrap();
     let mut code = Code::new(content.chars().collect(), Store::new());
-    code.pre_resolving();
+    code.pre_parsing();
     // print!("{:#?}", code.exprs);
     code.run();
 }
