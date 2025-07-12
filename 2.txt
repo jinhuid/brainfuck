@@ -1,187 +1,103 @@
 [
-    Increment {
-        state: Shape {
-            c: 10,
-            f: 0x00007ff7a7917d00,
-        },
-    },
-    Loop {
-        stack: [
-            MoveRight {
-                state: Shape {
-                    c: 1,
-                    f: 0x00007ff7a7917a70,
-                },
-            },
-            Increment {
-                state: Shape {
-                    c: 7,
-                    f: 0x00007ff7a7917d00,
-                },
-            },
-            MoveRight {
-                state: Shape {
-                    c: 1,
-                    f: 0x00007ff7a7917a70,
-                },
-            },
-            Increment {
-                state: Shape {
-                    c: 10,
-                    f: 0x00007ff7a7917d00,
-                },
-            },
-            MoveRight {
-                state: Shape {
-                    c: 1,
-                    f: 0x00007ff7a7917a70,
-                },
-            },
-            Increment {
-                state: Shape {
-                    c: 3,
-                    f: 0x00007ff7a7917d00,
-                },
-            },
-            MoveRight {
-                state: Shape {
-                    c: 1,
-                    f: 0x00007ff7a7917a70,
-                },
-            },
-            Increment {
-                state: Shape {
-                    c: 1,
-                    f: 0x00007ff7a7917d00,
-                },
-            },
-            MoveLeft {
-                state: Shape {
-                    c: 4,
-                    f: 0x00007ff7a7917af0,
-                },
-            },
-            Decrement {
-                state: Shape {
-                    c: 1,
-                    f: 0x00007ff7a79179e0,
-                },
-            },
+    IncrementCount(
+        10,
+    ),
+    Loop(
+        [
+            MoveRightCount(
+                1,
+            ),
+            IncrementCount(
+                7,
+            ),
+            MoveRightCount(
+                1,
+            ),
+            IncrementCount(
+                10,
+            ),
+            MoveRightCount(
+                1,
+            ),
+            IncrementCount(
+                3,
+            ),
+            MoveRightCount(
+                1,
+            ),
+            IncrementCount(
+                1,
+            ),
+            MoveLeftCount(
+                4,
+            ),
+            DecrementCount(
+                1,
+            ),
         ],
-    },
-    MoveRight {
-        state: Shape {
-            c: 1,
-            f: 0x00007ff7a7917a70,
-        },
-    },
-    Increment {
-        state: Shape {
-            c: 2,
-            f: 0x00007ff7a7917d00,
-        },
-    },
+    ),
+    MoveRightCount(
+        1,
+    ),
+    IncrementCount(
+        2,
+    ),
     Output,
-    MoveRight {
-        state: Shape {
-            c: 1,
-            f: 0x00007ff7a7917a70,
-        },
-    },
-    Increment {
-        state: Shape {
-            c: 1,
-            f: 0x00007ff7a7917d00,
-        },
-    },
+    MoveRightCount(
+        1,
+    ),
+    IncrementCount(
+        1,
+    ),
     Output,
-    Increment {
-        state: Shape {
-            c: 7,
-            f: 0x00007ff7a7917d00,
-        },
-    },
+    IncrementCount(
+        7,
+    ),
     Output,
     Output,
-    Increment {
-        state: Shape {
-            c: 3,
-            f: 0x00007ff7a7917d00,
-        },
-    },
+    IncrementCount(
+        3,
+    ),
     Output,
-    MoveRight {
-        state: Shape {
-            c: 1,
-            f: 0x00007ff7a7917a70,
-        },
-    },
-    Increment {
-        state: Shape {
-            c: 2,
-            f: 0x00007ff7a7917d00,
-        },
-    },
+    MoveRightCount(
+        1,
+    ),
+    IncrementCount(
+        2,
+    ),
     Output,
-    MoveLeft {
-        state: Shape {
-            c: 2,
-            f: 0x00007ff7a7917af0,
-        },
-    },
-    Increment {
-        state: Shape {
-            c: 15,
-            f: 0x00007ff7a7917d00,
-        },
-    },
+    MoveLeftCount(
+        2,
+    ),
+    IncrementCount(
+        15,
+    ),
     Output,
-    MoveRight {
-        state: Shape {
-            c: 1,
-            f: 0x00007ff7a7917a70,
-        },
-    },
+    MoveRightCount(
+        1,
+    ),
     Output,
-    Increment {
-        state: Shape {
-            c: 3,
-            f: 0x00007ff7a7917d00,
-        },
-    },
+    IncrementCount(
+        3,
+    ),
     Output,
-    Decrement {
-        state: Shape {
-            c: 6,
-            f: 0x00007ff7a79179e0,
-        },
-    },
+    DecrementCount(
+        6,
+    ),
     Output,
-    Decrement {
-        state: Shape {
-            c: 8,
-            f: 0x00007ff7a79179e0,
-        },
-    },
+    DecrementCount(
+        8,
+    ),
     Output,
-    MoveRight {
-        state: Shape {
-            c: 1,
-            f: 0x00007ff7a7917a70,
-        },
-    },
-    Increment {
-        state: Shape {
-            c: 1,
-            f: 0x00007ff7a7917d00,
-        },
-    },
+    MoveRightCount(
+        1,
+    ),
+    IncrementCount(
+        1,
+    ),
     Output,
-    MoveRight {
-        state: Shape {
-            c: 1,
-            f: 0x00007ff7a7917a70,
-        },
-    },
+    MoveRightCount(
+        1,
+    ),
     Output,
-]Hello World!
+]
