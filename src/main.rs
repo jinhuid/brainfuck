@@ -15,19 +15,20 @@ enum Token {
     BracketClose,
     Ignore,
 }
+use Token::*;
 
 impl Token {
     fn from_char(c: char) -> Self {
         match c {
-            '+' => Token::Plus,
-            '-' => Token::Minus,
-            '<' => Token::Left,
-            '>' => Token::Right,
-            '.' => Token::Dot,
-            ',' => Token::Comma,
-            '[' => Token::BracketOpen,
-            ']' => Token::BracketClose,
-            _ => Token::Ignore,
+            '+' => Plus,
+            '-' => Minus,
+            '<' => Left,
+            '>' => Right,
+            '.' => Dot,
+            ',' => Comma,
+            '[' => BracketOpen,
+            ']' => BracketClose,
+            _ => Ignore,
         }
     }
 }
@@ -107,25 +108,27 @@ enum Expr {
 use Expr::*;
 
 struct Interpreter {
-    source: Vec<char>,
+    source: String,
     memory: Memory,
     ast: Vec<Expr>,
 }
 
 impl Interpreter {
-    fn new(source: Vec<char>, memory: Memory) -> Self {
+    fn new(source: String) -> Self {
         Self {
             source,
-            memory,
-            ast: vec![],
+            memory: Memory::new(),
+            ast: Vec::new(),
         }
     }
+
+    #[inline(always)]
     fn single_loop_expr_optimize(exprs: Vec<Expr>) -> Expr {
         if exprs.len() < 2 {
-            match exprs[..] {
-                [DecrementCount(_)] | [IncrementCount(_)] => MakeZero,
-                [MoveLeftCount(n)] => JumpOut(Box::new(MoveLeftCount(n))),
-                [MoveRightCount(n)] => JumpOut(Box::new(MoveRightCount(n))),
+            match <[Expr; 1]>::try_from(exprs) {
+                Ok([DecrementCount(_)] | [IncrementCount(_)]) => MakeZero,
+                Ok([e @ MoveLeftCount(_)]) => JumpOut(e.into()),
+                Ok([e @ MoveRightCount(_)]) => JumpOut(e.into()),
                 _ => {
                     eprintln!("Infinite loop of IO operations detected");
                     std::process::exit(1)
@@ -136,6 +139,7 @@ impl Interpreter {
         }
     }
 
+    #[inline(always)]
     fn multiple_loop_expr_optimize(mut exprs: Vec<Expr>) -> Expr {
         if exprs.len() < 3 {
             return Loop(exprs);
@@ -179,7 +183,7 @@ impl Interpreter {
         Loop(exprs)
     }
 
-    // #[inline(always)]
+    #[inline(always)]
     fn optimize(exprs: Vec<Expr>) -> Expr {
         let e = Self::single_loop_expr_optimize(exprs);
         if let Loop(exprs) = e {
@@ -197,31 +201,31 @@ impl Interpreter {
         let mut loop_stack: Vec<Vec<Expr>> = Vec::new();
         let mut current_exprs: Vec<Expr> = Vec::new();
 
-        for (i, c) in self.source.iter().enumerate() {
-            match Token::from_char(*c) {
-                Token::Plus => match current_exprs.last_mut() {
-                    Some(Expr::IncrementCount(n)) => *n += 1,
-                    _ => current_exprs.push(Expr::IncrementCount(1)),
+        for (i, c) in self.source.chars().enumerate() {
+            match Token::from_char(c) {
+                Plus => match current_exprs.last_mut() {
+                    Some(IncrementCount(n)) => *n += 1,
+                    _ => current_exprs.push(IncrementCount(1)),
                 },
-                Token::Minus => match current_exprs.last_mut() {
-                    Some(Expr::DecrementCount(n)) => *n += 1,
-                    _ => current_exprs.push(Expr::DecrementCount(1)),
+                Minus => match current_exprs.last_mut() {
+                    Some(DecrementCount(n)) => *n += 1,
+                    _ => current_exprs.push(DecrementCount(1)),
                 },
-                Token::Right => match current_exprs.last_mut() {
-                    Some(Expr::MoveRightCount(n)) => *n += 1,
-                    _ => current_exprs.push(Expr::MoveRightCount(1)),
+                Right => match current_exprs.last_mut() {
+                    Some(MoveRightCount(n)) => *n += 1,
+                    _ => current_exprs.push(MoveRightCount(1)),
                 },
-                Token::Left => match current_exprs.last_mut() {
-                    Some(Expr::MoveLeftCount(n)) => *n += 1,
-                    _ => current_exprs.push(Expr::MoveLeftCount(1)),
+                Left => match current_exprs.last_mut() {
+                    Some(MoveLeftCount(n)) => *n += 1,
+                    _ => current_exprs.push(MoveLeftCount(1)),
                 },
-                Token::Dot => current_exprs.push(Expr::Output),
-                Token::Comma => current_exprs.push(Expr::Input),
-                Token::BracketOpen => {
+                Dot => current_exprs.push(Output),
+                Comma => current_exprs.push(Input),
+                BracketOpen => {
                     loop_stack.push(current_exprs);
                     current_exprs = Vec::new();
                 }
-                Token::BracketClose => {
+                BracketClose => {
                     let loop_exprs = current_exprs;
                     current_exprs = loop_stack
                         .pop()
@@ -229,7 +233,7 @@ impl Interpreter {
                     let exps = Self::optimize(loop_exprs);
                     current_exprs.push(exps);
                 }
-                Token::Ignore => {}
+                Ignore => {}
             }
         }
         if !loop_stack.is_empty() {
@@ -239,6 +243,12 @@ impl Interpreter {
     }
     fn run(&mut self) {
         self.parse();
+        let args = std::env::args().collect::<Vec<String>>();
+        if args.iter().any(|s| s == "dev") {
+            let filename = (args[1].split(".").next().unwrap()).to_string() + ".txt";
+            let mut file = std::fs::File::create(filename).unwrap();
+            writeln!(file, "{:#?}", self.ast).unwrap();
+        }
         fn execute(exprs: &mut Vec<Expr>, memory: &mut Memory) {
             for e in exprs.iter_mut() {
                 match e {
@@ -292,14 +302,15 @@ impl Interpreter {
     }
 }
 
-fn main() {
-    let filepath = env::args().nth(1).unwrap();
-    let filename = env::current_dir().unwrap().join(filepath);
-    let content = std::fs::read_to_string(filename).unwrap();
-    let mut interpreter = Interpreter::new(content.chars().collect(), Memory::new());
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let filepath = env::args().nth(1).expect("No filepath provided");
+    let filename = env::current_dir()?.join(filepath);
+    let content = std::fs::read_to_string(filename)?;
+    let mut interpreter = Interpreter::new(content);
 
     let time = std::time::Instant::now();
 
     interpreter.run();
     println!("Finished in {}ms", time.elapsed().as_millis());
+    Ok(())
 }
