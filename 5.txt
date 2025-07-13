@@ -1,0 +1,240 @@
+[
+    MoveRightCount(
+        1,
+    ),
+    IncrementCount(
+        10,
+    ),
+    MoveRightCount(
+        1,
+    ),
+    IncrementCount(
+        1,
+    ),
+    MoveRightCount(
+        1,
+    ),
+    IncrementCount(
+        1,
+    ),
+    Loop(
+        [
+            Loop(
+                [
+                    IncrementCount(
+                        5,
+                    ),
+                    OffsetMakeZeroOp {
+                        o: 1,
+                        v: 8,
+                    },
+                    MoveRightCount(
+                        1,
+                    ),
+                    Output,
+                    MoveLeftCount(
+                        1,
+                    ),
+                    IncrementCount(
+                        6,
+                    ),
+                    OffsetMakeZeroOp {
+                        o: 1,
+                        v: -8,
+                    },
+                    IncrementCount(
+                        1,
+                    ),
+                    MoveLeftCount(
+                        3,
+                    ),
+                ],
+            ),
+            MoveRightCount(
+                1,
+            ),
+            Output,
+            MoveRightCount(
+                2,
+            ),
+            Loop(
+                [
+                    MakeZero,
+                    MoveLeftCount(
+                        1,
+                    ),
+                    OffsetMakeZeroOp {
+                        o: 1,
+                        v: 1,
+                    },
+                    MoveRightCount(
+                        2,
+                    ),
+                    Loop(
+                        [
+                            MoveLeftCount(
+                                2,
+                            ),
+                            IncrementCount(
+                                1,
+                            ),
+                            MoveRightCount(
+                                1,
+                            ),
+                            IncrementCount(
+                                1,
+                            ),
+                            MoveRightCount(
+                                1,
+                            ),
+                            DecrementCount(
+                                1,
+                            ),
+                        ],
+                    ),
+                    MoveLeftCount(
+                        1,
+                    ),
+                    Loop(
+                        [
+                            OffsetOp {
+                                o: 1,
+                                v: 1,
+                            },
+                            DecrementCount(
+                                1,
+                            ),
+                            Loop(
+                                [
+                                    OffsetOp {
+                                        o: 1,
+                                        v: 1,
+                                    },
+                                    DecrementCount(
+                                        1,
+                                    ),
+                                    Loop(
+                                        [
+                                            OffsetOp {
+                                                o: 1,
+                                                v: 1,
+                                            },
+                                            DecrementCount(
+                                                1,
+                                            ),
+                                            Loop(
+                                                [
+                                                    OffsetOp {
+                                                        o: 1,
+                                                        v: 1,
+                                                    },
+                                                    DecrementCount(
+                                                        1,
+                                                    ),
+                                                    Loop(
+                                                        [
+                                                            OffsetOp {
+                                                                o: 1,
+                                                                v: 1,
+                                                            },
+                                                            DecrementCount(
+                                                                1,
+                                                            ),
+                                                            Loop(
+                                                                [
+                                                                    OffsetOp {
+                                                                        o: 1,
+                                                                        v: 1,
+                                                                    },
+                                                                    DecrementCount(
+                                                                        1,
+                                                                    ),
+                                                                    Loop(
+                                                                        [
+                                                                            OffsetOp {
+                                                                                o: 1,
+                                                                                v: 1,
+                                                                            },
+                                                                            DecrementCount(
+                                                                                1,
+                                                                            ),
+                                                                            Loop(
+                                                                                [
+                                                                                    OffsetOp {
+                                                                                        o: 1,
+                                                                                        v: 1,
+                                                                                    },
+                                                                                    DecrementCount(
+                                                                                        1,
+                                                                                    ),
+                                                                                    Loop(
+                                                                                        [
+                                                                                            OffsetOp {
+                                                                                                o: 1,
+                                                                                                v: 1,
+                                                                                            },
+                                                                                            DecrementCount(
+                                                                                                1,
+                                                                                            ),
+                                                                                            Loop(
+                                                                                                [
+                                                                                                    MoveRightCount(
+                                                                                                        1,
+                                                                                                    ),
+                                                                                                    MakeZero,
+                                                                                                    MoveRightCount(
+                                                                                                        1,
+                                                                                                    ),
+                                                                                                    IncrementCount(
+                                                                                                        1,
+                                                                                                    ),
+                                                                                                    MoveRightCount(
+                                                                                                        1,
+                                                                                                    ),
+                                                                                                    IncrementCount(
+                                                                                                        1,
+                                                                                                    ),
+                                                                                                    MoveLeftCount(
+                                                                                                        3,
+                                                                                                    ),
+                                                                                                    DecrementCount(
+                                                                                                        1,
+                                                                                                    ),
+                                                                                                    OffsetMakeZeroOp {
+                                                                                                        o: 1,
+                                                                                                        v: 1,
+                                                                                                    },
+                                                                                                ],
+                                                                                            ),
+                                                                                        ],
+                                                                                    ),
+                                                                                ],
+                                                                            ),
+                                                                        ],
+                                                                    ),
+                                                                ],
+                                                            ),
+                                                        ],
+                                                    ),
+                                                ],
+                                            ),
+                                        ],
+                                    ),
+                                ],
+                            ),
+                        ],
+                    ),
+                    IncrementCount(
+                        1,
+                    ),
+                    MoveRightCount(
+                        3,
+                    ),
+                ],
+            ),
+            MoveLeftCount(
+                3,
+            ),
+        ],
+    ),
+]

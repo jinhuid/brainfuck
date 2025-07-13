@@ -2,21 +2,17 @@
     IncrementCount(
         4,
     ),
-    OffsetMakeZeroOp(
-        RightInc(
-            1,
-            5,
-        ),
-    ),
+    OffsetMakeZeroOp {
+        o: 1,
+        v: 5,
+    },
     MoveRightCount(
         1,
     ),
-    OffsetMakeZeroOp(
-        LeftInc(
-            1,
-            5,
-        ),
-    ),
+    OffsetMakeZeroOp {
+        o: -1,
+        v: 5,
+    },
     IncrementCount(
         1,
     ),
@@ -59,12 +55,10 @@
             MoveRightCount(
                 2,
             ),
-            OffsetMakeZeroOp(
-                LeftInc(
-                    2,
-                    1,
-                ),
-            ),
+            OffsetMakeZeroOp {
+                o: -2,
+                v: 1,
+            },
             MoveRightCount(
                 3,
             ),
@@ -133,12 +127,10 @@
                     MoveLeftCount(
                         1,
                     ),
-                    OffsetMakeZeroOp(
-                        RightDec(
-                            1,
-                            4,
-                        ),
-                    ),
+                    OffsetMakeZeroOp {
+                        o: 1,
+                        v: -4,
+                    },
                     MoveLeftCount(
                         1,
                     ),
@@ -164,12 +156,10 @@
                             MoveLeftCount(
                                 1,
                             ),
-                            OffsetMakeZeroOp(
-                                RightDec(
-                                    1,
-                                    1,
-                                ),
-                            ),
+                            OffsetMakeZeroOp {
+                                o: 1,
+                                v: -1,
+                            },
                             IncrementCount(
                                 9,
                             ),
@@ -181,12 +171,10 @@
                                     DecrementCount(
                                         1,
                                     ),
-                                    OffsetMakeZeroOp(
-                                        LeftDec(
-                                            1,
-                                            1,
-                                        ),
-                                    ),
+                                    OffsetMakeZeroOp {
+                                        o: -1,
+                                        v: -1,
+                                    },
                                     IncrementCount(
                                         1,
                                     ),
@@ -200,12 +188,10 @@
                             MoveLeftCount(
                                 1,
                             ),
-                            OffsetMakeZeroOp(
-                                RightInc(
-                                    1,
-                                    1,
-                                ),
-                            ),
+                            OffsetMakeZeroOp {
+                                o: 1,
+                                v: 1,
+                            },
                             MoveRightCount(
                                 1,
                             ),
