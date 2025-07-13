@@ -37,10 +37,12 @@ struct Executor;
 
 impl Executor {
     fn execute(&mut self, exprs: Vec<Expr>) {
+        let time = std::time::Instant::now();
         let mut memory = Memory::new();
         exprs.iter().for_each(|e: &Expr| {
             e.effect(&mut memory);
         });
         memory.flush();
+        println!("Finished in {}ms", time.elapsed().as_millis());
     }
 }
