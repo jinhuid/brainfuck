@@ -2,7 +2,7 @@ use std::process::{self};
 
 use crate::{memory::Memory, token::Token};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum Expr {
     IncrementCount(u32),
     DecrementCount(u32),
@@ -14,18 +14,9 @@ pub enum Expr {
 
     // Optimize certain operations
     MakeZero,
-    InfiniteLoop(Vec<Expr>),
     JumpOut(Box<Expr>),
-    OffsetOp(Offset),
-    OffsetMakeZeroOp(Offset),
-}
-
-#[derive(Debug, Clone)]
-pub(crate) enum Offset {
-    LeftInc(u32, u32),
-    LeftDec(u32, u32),
-    RightInc(u32, u32),
-    RightDec(u32, u32),
+    OffsetOp { o: i32, v: i32 },
+    OffsetMakeZeroOp { o: i32, v: i32 },
 }
 
 use Expr::*;
@@ -61,51 +52,20 @@ impl Expr {
             MakeZero => {
                 memory.cells[memory.pointer] = 0;
             }
-            InfiniteLoop(exprs) => loop {
-                exprs.iter().for_each(|expr| expr.effect(memory));
-            },
             JumpOut(expr) => {
                 while memory.val() != 0 {
                     expr.effect(memory);
                 }
             }
-            OffsetOp(o) => match o {
-                Offset::LeftInc(x, y) => {
-                    memory.cells[memory.pointer - (*x as usize)] += *y as u8;
-                }
-                Offset::LeftDec(x, y) => {
-                    memory.cells[memory.pointer - (*x as usize)] -= *y as u8;
-                }
-                Offset::RightInc(x, y) => {
-                    memory.cells[memory.pointer + (*x as usize)] += *y as u8;
-                }
-                Offset::RightDec(x, y) => {
-                    memory.cells[memory.pointer + (*x as usize)] -= *y as u8;
-                }
-            },
-            OffsetMakeZeroOp(o) => {
+            OffsetOp { o, v } => {
+                memory.cells[memory.pointer.wrapping_add(*o as usize)] += *v as u8;
+            }
+            OffsetMakeZeroOp { o, v } => {
                 let current_value = memory.val();
                 if current_value != 0 {
                     memory.cells[memory.pointer] = 0;
-                    // expr1.effect(memory);
-                    match o {
-                        Offset::LeftInc(x, y) => {
-                            memory.cells[memory.pointer - (*x as usize)] +=
-                                (*y as u8) * current_value;
-                        }
-                        Offset::LeftDec(x, y) => {
-                            memory.cells[memory.pointer - (*x as usize)] -=
-                                (*y as u8) * current_value;
-                        }
-                        Offset::RightInc(x, y) => {
-                            memory.cells[memory.pointer + (*x as usize)] +=
-                                (*y as u8) * current_value;
-                        }
-                        Offset::RightDec(x, y) => {
-                            memory.cells[memory.pointer + (*x as usize)] -=
-                                (*y as u8) * current_value;
-                        }
-                    }
+                    memory.cells[memory.pointer.wrapping_add(*o as usize)] +=
+                        (*v as u8).wrapping_mul(current_value);
                 }
             }
         }
@@ -142,7 +102,7 @@ impl Expr {
                     let loop_exprs = current_exprs;
                     current_exprs = loop_stack
                         .pop()
-                        .unwrap_or_else(|| panic!("Unmatched closing bracket at {}", i));
+                        .unwrap_or_else(|| panic!("Unmatched closing bracket at {i}"));
 
                     let expr = Parser::optimize(loop_exprs);
                     current_exprs.push(expr);
@@ -169,9 +129,8 @@ impl Parser {
     fn single_loop_expr_optimize(exprs: Vec<Expr>) -> Expr {
         match exprs[..] {
             [DecrementCount(_)] | [IncrementCount(_)] => MakeZero,
-            [MoveLeftCount(n)] => JumpOut(Box::new(MoveLeftCount(n).into())),
-            [MoveRightCount(n)] => JumpOut(Box::new(MoveRightCount(n).into())),
-            [Loop(_)] => InfiniteLoop(exprs),
+            [MoveLeftCount(n)] => JumpOut(Box::new(MoveLeftCount(n))),
+            [MoveRightCount(n)] => JumpOut(Box::new(MoveRightCount(n))),
             [..] if exprs.len() > 1 => Self::multiple_loop_expr_optimize(exprs),
             _ => {
                 eprintln!("Infinite loop of IO operations detected");
@@ -189,19 +148,31 @@ impl Parser {
         while i + 2 < exprs.len() {
             match &exprs[i..i + 3] {
                 [MoveLeftCount(x), DecrementCount(n), MoveRightCount(y)] if x == y => {
-                    let new_op = OffsetOp(Offset::LeftDec(*x, *n));
+                    let new_op = OffsetOp {
+                        o: (0 - x) as i32,
+                        v: (0 - n) as i32,
+                    };
                     exprs.splice(i..i + 3, [new_op]);
                 }
                 [MoveLeftCount(x), IncrementCount(n), MoveRightCount(y)] if x == y => {
-                    let new_op = OffsetOp(Offset::LeftInc(*x, *n));
+                    let new_op = OffsetOp {
+                        o: (0 - x) as i32,
+                        v: *n as i32,
+                    };
                     exprs.splice(i..i + 3, [new_op]);
                 }
                 [MoveRightCount(x), DecrementCount(n), MoveLeftCount(y)] if x == y => {
-                    let new_op = OffsetOp(Offset::RightDec(*x, *n));
+                    let new_op = OffsetOp {
+                        o: *x as i32,
+                        v: (0 - n) as i32,
+                    };
                     exprs.splice(i..i + 3, [new_op]);
                 }
                 [MoveRightCount(x), IncrementCount(n), MoveLeftCount(y)] if x == y => {
-                    let new_op = OffsetOp(Offset::RightInc(*x, *n));
+                    let new_op = OffsetOp {
+                        o: *x as i32,
+                        v: *n as i32,
+                    };
                     exprs.splice(i..i + 3, [new_op]);
                 }
                 _ => {}
@@ -214,11 +185,10 @@ impl Parser {
     // #[inline(always)]
     fn optimize(exprs: Vec<Expr>) -> Expr {
         let e = Self::single_loop_expr_optimize(exprs);
-
         if let Loop(exprs) = e {
             match <[Expr; 2]>::try_from(exprs) {
-                Ok([DecrementCount(1), OffsetOp(o)]) => OffsetMakeZeroOp(o),
-                Ok([OffsetOp(o), DecrementCount(1)]) => OffsetMakeZeroOp(o),
+                Ok([DecrementCount(1), OffsetOp { o, v }]) => OffsetMakeZeroOp { o, v },
+                Ok([OffsetOp { o, v }, DecrementCount(1)]) => OffsetMakeZeroOp { o, v },
                 Ok(arr) => Loop(arr.into()),
                 Err(exprs) => Loop(exprs),
             }

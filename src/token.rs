@@ -28,10 +28,11 @@ impl Token {
         }
     }
     pub fn from_char(c: Chars) -> Vec<Token> {
-        let mut tokens = vec![];
-        c.for_each(|c| {
-            tokens.push(Token::convert_to_token(c));
-        });
+        let c = c.as_str();
+        let mut tokens = Vec::with_capacity(c.len());
+        for ch in c.chars() {
+            tokens.push(Token::convert_to_token(ch));
+        }
         tokens
     }
 }

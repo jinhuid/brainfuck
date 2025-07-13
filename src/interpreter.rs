@@ -22,11 +22,11 @@ impl Interpreter {
         let exprs = self.parser.parse();
 
         // 如果是开发模式，则输出信息到文件
-        let a = args().into_iter().collect::<Vec<_>>();
+        let a = args().collect::<Vec<_>>();
         if a.iter().any(|arg| arg == "dev") {
             let filename = (a[1].split(".").next().unwrap()).to_string() + ".txt";
             let mut file = File::create(filename).unwrap();
-            write!(file, "{:#?}\n", exprs).expect("Failed to write AST debug info");
+            writeln!(file, "{exprs:#?}\n").expect("Failed to write AST debug info");
         }
 
         self.executor.execute(exprs);
@@ -38,9 +38,12 @@ struct Executor;
 impl Executor {
     fn execute(&mut self, exprs: Vec<Expr>) {
         let mut memory = Memory::new();
-        exprs.iter().for_each(|e: &Expr| {
+        let time = std::time::Instant::now();
+        exprs.into_iter().for_each(|e| {
             e.effect(&mut memory);
         });
+        let end = time.elapsed();
         memory.flush();
+        println!("time :{}ms", end.as_millis());
     }
 }
