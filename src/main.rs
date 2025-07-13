@@ -101,8 +101,8 @@ enum Expr {
     // Optimize certain operations
     MakeZero,
     JumpOut(Box<Expr>),
-    OffsetOp { o: i32, v: i32 },
-    OffsetMakeZeroOp { o: i32, v: i32 },
+    OffsetOp(Box<Expr>, Box<Expr>),
+    OffsetMakeZeroOp(Box<Expr>, Box<Expr>),
 }
 use Expr::*;
 
@@ -145,31 +145,23 @@ impl Interpreter {
         while i + 2 < exprs.len() {
             match &exprs[i..i + 3] {
                 [MoveLeftCount(x), DecrementCount(n), MoveRightCount(y)] if x == y => {
-                    let new_op = OffsetOp {
-                        o: 0i32 - *x as i32,
-                        v: 0i32 - *n as i32,
-                    };
+                    let new_op =
+                        OffsetOp(Box::new(MoveLeftCount(*x)), Box::new(DecrementCount(*n)));
                     exprs.splice(i..i + 3, [new_op]);
                 }
                 [MoveLeftCount(x), IncrementCount(n), MoveRightCount(y)] if x == y => {
-                    let new_op = OffsetOp {
-                        o: 0i32 - *x as i32,
-                        v: *n as i32,
-                    };
+                    let new_op =
+                        OffsetOp(Box::new(MoveLeftCount(*x)), Box::new(IncrementCount(*n)));
                     exprs.splice(i..i + 3, [new_op]);
                 }
                 [MoveRightCount(x), DecrementCount(n), MoveLeftCount(y)] if x == y => {
-                    let new_op = OffsetOp {
-                        o: *x as i32,
-                        v: 0i32 - *n as i32,
-                    };
+                    let new_op =
+                        OffsetOp(Box::new(MoveRightCount(*x)), Box::new(DecrementCount(*n)));
                     exprs.splice(i..i + 3, [new_op]);
                 }
                 [MoveRightCount(x), IncrementCount(n), MoveLeftCount(y)] if x == y => {
-                    let new_op = OffsetOp {
-                        o: *x as i32,
-                        v: *n as i32,
-                    };
+                    let new_op =
+                        OffsetOp(Box::new(MoveRightCount(*x)), Box::new(IncrementCount(*n)));
                     exprs.splice(i..i + 3, [new_op]);
                 }
                 _ => {}
@@ -184,8 +176,8 @@ impl Interpreter {
         let e = Self::single_loop_expr_optimize(exprs);
         if let Loop(exprs) = e {
             match <[Expr; 2]>::try_from(exprs) {
-                Ok([DecrementCount(1), OffsetOp { o, v }]) => OffsetMakeZeroOp { o, v },
-                Ok([OffsetOp { o, v }, DecrementCount(1)]) => OffsetMakeZeroOp { o, v },
+                Ok([DecrementCount(1), OffsetOp(o, v)]) => OffsetMakeZeroOp(o, v),
+                Ok([OffsetOp(o, v), DecrementCount(1)]) => OffsetMakeZeroOp(o, v),
                 Ok(arr) => Loop(arr.into()),
                 Err(exprs) => Loop(exprs),
             }
@@ -273,15 +265,45 @@ impl Interpreter {
                             }
                         }
                     }
-                    OffsetOp { o, v } => {
-                        memory.cells[memory.pointer.wrapping_add(*o as usize)] += *v as u8;
-                    }
-                    OffsetMakeZeroOp { o, v } => {
+                    OffsetOp(left, right) => match (left.as_ref(), right.as_ref()) {
+                        (MoveLeftCount(o), IncrementCount(v)) => {
+                            memory.cells[memory.pointer - *o as usize] += *v as u8
+                        }
+                        (MoveRightCount(o), IncrementCount(v)) => {
+                            memory.cells[memory.pointer + *o as usize] += *v as u8
+                        }
+                        (MoveLeftCount(o), DecrementCount(v)) => {
+                            memory.cells[memory.pointer - *o as usize] -= *v as u8
+                        }
+                        (MoveRightCount(o), DecrementCount(v)) => {
+                            memory.cells[memory.pointer + *o as usize] -= *v as u8
+                        }
+                        _ => unreachable!(),
+                    },
+                    OffsetMakeZeroOp(left, right) => {
                         let current_value = memory.cells[memory.pointer];
                         if current_value != 0 {
                             memory.cells[memory.pointer] = 0;
-                            memory.cells[memory.pointer.wrapping_add(*o as usize)] +=
-                                (*v as u8).wrapping_mul(current_value);
+
+                            match (left.as_ref(), right.as_ref()) {
+                                (MoveLeftCount(o), IncrementCount(v)) => {
+                                    memory.cells[memory.pointer - *o as usize] +=
+                                        (*v as u8) * (current_value)
+                                }
+                                (MoveRightCount(o), IncrementCount(v)) => {
+                                    memory.cells[memory.pointer + *o as usize] +=
+                                        (*v as u8) * (current_value)
+                                }
+                                (MoveLeftCount(o), DecrementCount(v)) => {
+                                    memory.cells[memory.pointer - *o as usize] -=
+                                        (*v as u8) * (current_value)
+                                }
+                                (MoveRightCount(o), DecrementCount(v)) => {
+                                    memory.cells[memory.pointer + *o as usize] -=
+                                        (*v as u8) * (current_value)
+                                }
+                                _ => unreachable!(),
+                            }
                         }
                     }
                 }
