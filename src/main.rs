@@ -17,6 +17,7 @@ enum Token {
     BracketClose,
     Ignore,
 }
+use Token::*;
 
 impl Token {
     fn from_char(c: char) -> Self {
@@ -96,7 +97,7 @@ enum Expr {
     DecrementCount(u32),
     MoveRightCount(u32),
     MoveLeftCount(u32),
-    Loop(Vec<Expr>),
+    Loop { exprs: Vec<Expr>, one_time: bool },
     Input,
     Output,
 
@@ -122,100 +123,126 @@ impl Interpreter {
             ast: vec![],
         }
     }
-    fn single_loop_expr_optimize(exprs: Vec<Expr>) -> Expr {
-        if exprs.len() < 2 {
-            match exprs[..] {
-                [DecrementCount(_)] | [IncrementCount(_)] => MakeZero,
-                [MoveLeftCount(n)] => JumpOut(Box::new(MoveLeftCount(n))),
-                [MoveRightCount(n)] => JumpOut(Box::new(MoveRightCount(n))),
-                _ => {
-                    eprintln!("Infinite loop of IO operations detected");
-                    std::process::exit(1)
+    #[inline(always)]
+    fn optimize(mut exprs: Vec<Expr>) -> Expr {
+        loop {
+            match exprs.len() {
+                0 => {
+                    eprintln!("Infinite loop :{:#?}", exprs);
+                    std::process::exit(1);
+                }
+                1 => {
+                    break match <[Expr; 1]>::try_from(exprs) {
+                        Ok([DecrementCount(_)] | [IncrementCount(_)]) => MakeZero,
+                        Ok([e @ MoveLeftCount(_)]) => JumpOut(e.into()),
+                        Ok([e @ MoveRightCount(_)]) => JumpOut(e.into()),
+                        _ => {
+                            eprintln!("Infinite loop of IO operations detected");
+                            std::process::exit(1);
+                        }
+                    };
+                }
+                2 => {
+                    break match <[Expr; 2]>::try_from(exprs) {
+                        Ok([DecrementCount(1), OffsetOp(o, v)]) => OffsetMakeZeroOp(o, v),
+                        Ok([OffsetOp(o, v), DecrementCount(1)]) => OffsetMakeZeroOp(o, v),
+                        Ok(arr) => Loop {
+                            exprs: Vec::from(arr),
+                            one_time: false,
+                        },
+                        Err(exprs) => Loop {
+                            exprs,
+                            one_time: false,
+                        },
+                    };
+                }
+                3.. => {
+                    let mut offset: i32 = 0;
+                    let mut jump_out = false;
+                    for e in exprs.iter() {
+                        match e {
+                            MoveLeftCount(n) => offset -= *n as i32,
+                            MoveRightCount(n) => offset += *n as i32,
+                            IncrementCount(_) | DecrementCount(_) => {}
+                            _ => {
+                                jump_out = true;
+                                break;
+                            }
+                        }
+                    }
+                    if !jump_out && offset == 0 {
+                        return Loop {
+                            exprs,
+                            one_time: true,
+                        };
+                    }
+                    let mut i = 0;
+                    let mut matched = false;
+                    while i + 2 < exprs.len() {
+                        let op = match &exprs[i..i + 3] {
+                            [MoveLeftCount(x), DecrementCount(n), MoveRightCount(y)] if x == y => {
+                                OffsetOp(Box::new(MoveLeftCount(*x)), Box::new(DecrementCount(*n)))
+                            }
+                            [MoveLeftCount(x), IncrementCount(n), MoveRightCount(y)] if x == y => {
+                                OffsetOp(Box::new(MoveLeftCount(*x)), Box::new(IncrementCount(*n)))
+                            }
+                            [MoveRightCount(x), DecrementCount(n), MoveLeftCount(y)] if x == y => {
+                                OffsetOp(Box::new(MoveRightCount(*x)), Box::new(DecrementCount(*n)))
+                            }
+                            [MoveRightCount(x), IncrementCount(n), MoveLeftCount(y)] if x == y => {
+                                OffsetOp(Box::new(MoveRightCount(*x)), Box::new(IncrementCount(*n)))
+                            }
+                            _ => {
+                                i += 1;
+                                continue;
+                            }
+                        };
+                        matched = true;
+                        exprs.splice(i..i + 3, [op]);
+                        i += 1;
+                    }
+                    if matched {
+                        continue;
+                    } else {
+                        break Loop {
+                            exprs,
+                            one_time: false,
+                        };
+                    }
                 }
             }
-        } else {
-            Self::multiple_loop_expr_optimize(exprs)
         }
     }
 
-    fn multiple_loop_expr_optimize(mut exprs: Vec<Expr>) -> Expr {
-        if exprs.len() < 3 {
-            return Loop(exprs);
-        }
-
-        let mut i = 0;
-        while i + 2 < exprs.len() {
-            match &exprs[i..i + 3] {
-                [MoveLeftCount(x), DecrementCount(n), MoveRightCount(y)] if x == y => {
-                    let new_op =
-                        OffsetOp(Box::new(MoveLeftCount(*x)), Box::new(DecrementCount(*n)));
-                    exprs.splice(i..i + 3, [new_op]);
-                }
-                [MoveLeftCount(x), IncrementCount(n), MoveRightCount(y)] if x == y => {
-                    let new_op =
-                        OffsetOp(Box::new(MoveLeftCount(*x)), Box::new(IncrementCount(*n)));
-                    exprs.splice(i..i + 3, [new_op]);
-                }
-                [MoveRightCount(x), DecrementCount(n), MoveLeftCount(y)] if x == y => {
-                    let new_op =
-                        OffsetOp(Box::new(MoveRightCount(*x)), Box::new(DecrementCount(*n)));
-                    exprs.splice(i..i + 3, [new_op]);
-                }
-                [MoveRightCount(x), IncrementCount(n), MoveLeftCount(y)] if x == y => {
-                    let new_op =
-                        OffsetOp(Box::new(MoveRightCount(*x)), Box::new(IncrementCount(*n)));
-                    exprs.splice(i..i + 3, [new_op]);
-                }
-                _ => {}
-            }
-            i += 1;
-        }
-        Loop(exprs)
-    }
-
-    // #[inline(always)]
-    fn optimize(exprs: Vec<Expr>) -> Expr {
-        let e = Self::single_loop_expr_optimize(exprs);
-        if let Loop(exprs) = e {
-            match <[Expr; 2]>::try_from(exprs) {
-                Ok([DecrementCount(1), OffsetOp(o, v)]) => OffsetMakeZeroOp(o, v),
-                Ok([OffsetOp(o, v), DecrementCount(1)]) => OffsetMakeZeroOp(o, v),
-                Ok(arr) => Loop(arr.into()),
-                Err(exprs) => Loop(exprs),
-            }
-        } else {
-            e
-        }
-    }
     fn parse(&mut self) {
         let mut loop_stack: Vec<Vec<Expr>> = Vec::new();
         let mut current_exprs: Vec<Expr> = Vec::new();
 
         for (i, c) in self.source.chars().enumerate() {
             match Token::from_char(c) {
-                Token::Plus => match current_exprs.last_mut() {
-                    Some(Expr::IncrementCount(n)) => *n += 1,
-                    _ => current_exprs.push(Expr::IncrementCount(1)),
+                Plus => match current_exprs.last_mut() {
+                    Some(IncrementCount(n)) => *n += 1,
+                    _ => current_exprs.push(IncrementCount(1)),
                 },
-                Token::Minus => match current_exprs.last_mut() {
-                    Some(Expr::DecrementCount(n)) => *n += 1,
-                    _ => current_exprs.push(Expr::DecrementCount(1)),
+                Minus => match current_exprs.last_mut() {
+                    Some(DecrementCount(n)) => *n += 1,
+                    _ => current_exprs.push(DecrementCount(1)),
                 },
-                Token::Right => match current_exprs.last_mut() {
-                    Some(Expr::MoveRightCount(n)) => *n += 1,
-                    _ => current_exprs.push(Expr::MoveRightCount(1)),
+                Right => match current_exprs.last_mut() {
+                    Some(MoveRightCount(n)) => *n += 1,
+                    _ => current_exprs.push(MoveRightCount(1)),
                 },
-                Token::Left => match current_exprs.last_mut() {
-                    Some(Expr::MoveLeftCount(n)) => *n += 1,
-                    _ => current_exprs.push(Expr::MoveLeftCount(1)),
+                Left => match current_exprs.last_mut() {
+                    Some(MoveLeftCount(n)) => *n += 1,
+                    _ => current_exprs.push(MoveLeftCount(1)),
                 },
-                Token::Dot => current_exprs.push(Expr::Output),
-                Token::Comma => current_exprs.push(Expr::Input),
-                Token::BracketOpen => {
+                Dot => current_exprs.push(Output),
+                Comma => current_exprs.push(Input),
+                BracketOpen => {
                     loop_stack.push(current_exprs);
                     current_exprs = Vec::new();
                 }
-                Token::BracketClose => {
+                BracketClose => {
                     let loop_exprs = current_exprs;
                     current_exprs = loop_stack
                         .pop()
@@ -223,7 +250,7 @@ impl Interpreter {
                     let exps = Self::optimize(loop_exprs);
                     current_exprs.push(exps);
                 }
-                Token::Ignore => {}
+                Ignore => {}
             }
         }
         if !loop_stack.is_empty() {
@@ -256,17 +283,29 @@ impl Interpreter {
                     MoveLeftCount(count) => memory.move_pointer_left(*count),
                     Output => memory.output_cell(),
                     Input => memory.input_cell(),
-                    Loop(exprs) => {
-                        while memory.cells[memory.pointer] != 0 {
-                            execute(&exprs, memory)
+                    Loop { exprs, one_time } => match *one_time {
+                        false => {
+                            while memory.cells[memory.pointer] != 0 {
+                                execute(exprs, memory);
+                            }
                         }
-                    }
+                        true if memory.cells[memory.pointer] != 0 => {
+                            let times = memory.cells[memory.pointer] as u32;
+                            exprs.iter().for_each(|e| match e {
+                                IncrementCount(count) => memory.increment_cell(*count * times),
+                                DecrementCount(count) => memory.decrement_cell(*count * times),
+                                MoveLeftCount(n) => memory.move_pointer_left(*n),
+                                MoveRightCount(n) => memory.move_pointer_right(*n),
+                                _ => unreachable!(),
+                            });
+                        }
+                        true => return,
+                    },
                     MakeZero => {
                         memory.cells[memory.pointer] = 0;
                     }
                     JumpOut(expr) => {
                         while memory.cells[memory.pointer] != 0 {
-                            // expr.effect(memory);
                             match expr.as_ref() {
                                 MoveLeftCount(n) => {
                                     memory.move_pointer_left(*n);
