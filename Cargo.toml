@@ -1,13 +1,30 @@
 [package]
 name = "brainfuck"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
+default-run = "brainfuck"
 
 [dependencies]
+
+[lib]
+name = "brainfuck"
+path = "src/lib.rs"
+
+[[bin]]
+name = "brainfuck"
+path = "src/main.rs"
+
+[[bin]]
+name = "enum_version"
+path = "bin/enum_version.rs"
+
+[[bin]]
+name = "trait_version"
+path = "bin/trait_version.rs"
 
 [profile.release]
 opt-level = 3
 lto = true
 codegen-units = 1
 panic = "abort"
-debug = true
+debug = false

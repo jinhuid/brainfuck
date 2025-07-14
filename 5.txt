@@ -17,16 +17,29 @@
     IncrementCount(
         1,
     ),
-    Loop(
-        [
-            Loop(
-                [
+    Loop {
+        exprs: [
+            Loop {
+                exprs: [
                     IncrementCount(
                         5,
                     ),
-                    OffsetMakeZeroOp {
-                        o: 1,
-                        v: 8,
+                    Loop {
+                        exprs: [
+                            MoveRightCount(
+                                1,
+                            ),
+                            IncrementCount(
+                                8,
+                            ),
+                            MoveLeftCount(
+                                1,
+                            ),
+                            DecrementCount(
+                                1,
+                            ),
+                        ],
+                        one_time: true,
                     },
                     MoveRightCount(
                         1,
@@ -38,9 +51,22 @@
                     IncrementCount(
                         6,
                     ),
-                    OffsetMakeZeroOp {
-                        o: 1,
-                        v: -8,
+                    Loop {
+                        exprs: [
+                            MoveRightCount(
+                                1,
+                            ),
+                            DecrementCount(
+                                8,
+                            ),
+                            MoveLeftCount(
+                                1,
+                            ),
+                            DecrementCount(
+                                1,
+                            ),
+                        ],
+                        one_time: true,
                     },
                     IncrementCount(
                         1,
@@ -49,7 +75,8 @@
                         3,
                     ),
                 ],
-            ),
+                one_time: false,
+            },
             MoveRightCount(
                 1,
             ),
@@ -57,21 +84,34 @@
             MoveRightCount(
                 2,
             ),
-            Loop(
-                [
+            Loop {
+                exprs: [
                     MakeZero,
                     MoveLeftCount(
                         1,
                     ),
-                    OffsetMakeZeroOp {
-                        o: 1,
-                        v: 1,
+                    Loop {
+                        exprs: [
+                            MoveRightCount(
+                                1,
+                            ),
+                            IncrementCount(
+                                1,
+                            ),
+                            MoveLeftCount(
+                                1,
+                            ),
+                            DecrementCount(
+                                1,
+                            ),
+                        ],
+                        one_time: true,
                     },
                     MoveRightCount(
                         2,
                     ),
-                    Loop(
-                        [
+                    Loop {
+                        exprs: [
                             MoveLeftCount(
                                 2,
                             ),
@@ -91,12 +131,13 @@
                                 1,
                             ),
                         ],
-                    ),
+                        one_time: true,
+                    },
                     MoveLeftCount(
                         1,
                     ),
-                    Loop(
-                        [
+                    Loop {
+                        exprs: [
                             OffsetOp {
                                 o: 1,
                                 v: 1,
@@ -104,8 +145,8 @@
                             DecrementCount(
                                 1,
                             ),
-                            Loop(
-                                [
+                            Loop {
+                                exprs: [
                                     OffsetOp {
                                         o: 1,
                                         v: 1,
@@ -113,8 +154,8 @@
                                     DecrementCount(
                                         1,
                                     ),
-                                    Loop(
-                                        [
+                                    Loop {
+                                        exprs: [
                                             OffsetOp {
                                                 o: 1,
                                                 v: 1,
@@ -122,8 +163,8 @@
                                             DecrementCount(
                                                 1,
                                             ),
-                                            Loop(
-                                                [
+                                            Loop {
+                                                exprs: [
                                                     OffsetOp {
                                                         o: 1,
                                                         v: 1,
@@ -131,8 +172,8 @@
                                                     DecrementCount(
                                                         1,
                                                     ),
-                                                    Loop(
-                                                        [
+                                                    Loop {
+                                                        exprs: [
                                                             OffsetOp {
                                                                 o: 1,
                                                                 v: 1,
@@ -140,8 +181,8 @@
                                                             DecrementCount(
                                                                 1,
                                                             ),
-                                                            Loop(
-                                                                [
+                                                            Loop {
+                                                                exprs: [
                                                                     OffsetOp {
                                                                         o: 1,
                                                                         v: 1,
@@ -149,8 +190,8 @@
                                                                     DecrementCount(
                                                                         1,
                                                                     ),
-                                                                    Loop(
-                                                                        [
+                                                                    Loop {
+                                                                        exprs: [
                                                                             OffsetOp {
                                                                                 o: 1,
                                                                                 v: 1,
@@ -158,8 +199,8 @@
                                                                             DecrementCount(
                                                                                 1,
                                                                             ),
-                                                                            Loop(
-                                                                                [
+                                                                            Loop {
+                                                                                exprs: [
                                                                                     OffsetOp {
                                                                                         o: 1,
                                                                                         v: 1,
@@ -167,8 +208,8 @@
                                                                                     DecrementCount(
                                                                                         1,
                                                                                     ),
-                                                                                    Loop(
-                                                                                        [
+                                                                                    Loop {
+                                                                                        exprs: [
                                                                                             OffsetOp {
                                                                                                 o: 1,
                                                                                                 v: 1,
@@ -176,8 +217,8 @@
                                                                                             DecrementCount(
                                                                                                 1,
                                                                                             ),
-                                                                                            Loop(
-                                                                                                [
+                                                                                            Loop {
+                                                                                                exprs: [
                                                                                                     MoveRightCount(
                                                                                                         1,
                                                                                                     ),
@@ -200,30 +241,53 @@
                                                                                                     DecrementCount(
                                                                                                         1,
                                                                                                     ),
-                                                                                                    OffsetMakeZeroOp {
-                                                                                                        o: 1,
-                                                                                                        v: 1,
+                                                                                                    Loop {
+                                                                                                        exprs: [
+                                                                                                            MoveRightCount(
+                                                                                                                1,
+                                                                                                            ),
+                                                                                                            IncrementCount(
+                                                                                                                1,
+                                                                                                            ),
+                                                                                                            MoveLeftCount(
+                                                                                                                1,
+                                                                                                            ),
+                                                                                                            DecrementCount(
+                                                                                                                1,
+                                                                                                            ),
+                                                                                                        ],
+                                                                                                        one_time: true,
                                                                                                     },
                                                                                                 ],
-                                                                                            ),
+                                                                                                one_time: false,
+                                                                                            },
                                                                                         ],
-                                                                                    ),
+                                                                                        one_time: false,
+                                                                                    },
                                                                                 ],
-                                                                            ),
+                                                                                one_time: false,
+                                                                            },
                                                                         ],
-                                                                    ),
+                                                                        one_time: false,
+                                                                    },
                                                                 ],
-                                                            ),
+                                                                one_time: false,
+                                                            },
                                                         ],
-                                                    ),
+                                                        one_time: false,
+                                                    },
                                                 ],
-                                            ),
+                                                one_time: false,
+                                            },
                                         ],
-                                    ),
+                                        one_time: false,
+                                    },
                                 ],
-                            ),
+                                one_time: false,
+                            },
                         ],
-                    ),
+                        one_time: false,
+                    },
                     IncrementCount(
                         1,
                     ),
@@ -231,10 +295,12 @@
                         3,
                     ),
                 ],
-            ),
+                one_time: false,
+            },
             MoveLeftCount(
                 3,
             ),
         ],
-    ),
+        one_time: false,
+    },
 ]

@@ -2,8 +2,8 @@
     IncrementCount(
         10,
     ),
-    Loop(
-        [
+    Loop {
+        exprs: [
             MoveRightCount(
                 1,
             ),
@@ -35,7 +35,8 @@
                 1,
             ),
         ],
-    ),
+        one_time: true,
+    },
     MoveRightCount(
         1,
     ),
