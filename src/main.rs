@@ -1,9 +1,11 @@
 use std::{
     env,
+    fs::File,
     io::{Read, Write},
+    path::Path,
 };
 
-#[derive(PartialEq, Debug)]
+#[derive(Debug)]
 enum Token {
     Plus,
     Minus,
@@ -107,16 +109,16 @@ enum Expr {
 use Expr::*;
 
 struct Interpreter {
-    source: Vec<char>,
+    source: String,
     memory: Memory,
     ast: Vec<Expr>,
 }
 
 impl Interpreter {
-    fn new(source: Vec<char>, memory: Memory) -> Self {
+    fn new(source: String) -> Self {
         Self {
             source,
-            memory,
+            memory: Memory::new(),
             ast: vec![],
         }
     }
@@ -189,8 +191,8 @@ impl Interpreter {
         let mut loop_stack: Vec<Vec<Expr>> = Vec::new();
         let mut current_exprs: Vec<Expr> = Vec::new();
 
-        for (i, c) in self.source.iter().enumerate() {
-            match Token::from_char(*c) {
+        for (i, c) in self.source.chars().enumerate() {
+            match Token::from_char(c) {
                 Token::Plus => match current_exprs.last_mut() {
                     Some(Expr::IncrementCount(n)) => *n += 1,
                     _ => current_exprs.push(Expr::IncrementCount(1)),
@@ -230,9 +232,23 @@ impl Interpreter {
         self.ast = current_exprs;
     }
     fn run(&mut self) {
+        let time = std::time::Instant::now();
         self.parse();
-        fn execute(exprs: &mut Vec<Expr>, memory: &mut Memory) {
-            for e in exprs.iter_mut() {
+        println!("Parsed in {}ms", time.elapsed().as_millis());
+
+        // let time = std::time::Instant::now();
+        // println!("Executed in {}ms", time.elapsed().as_millis());
+        // if Some("dev") == std::env::args().nth(2).as_deref() {
+        //     let filename = std::env::args().nth(2).unwrap();
+        //     let filename = Path::new(&filename).file_stem().unwrap();
+        //     let mut file = File::create(format!("{}.txt", filename.to_str().unwrap())).unwrap();
+        //     writeln!(file, "{:#?}", self.ast).unwrap();
+        // }
+        // println!("Wrote in {}ms", time.elapsed().as_millis());
+
+        #[inline(always)]
+        fn execute(exprs: &[Expr], memory: &mut Memory) {
+            for e in exprs.iter() {
                 match e {
                     IncrementCount(count) => memory.increment_cell(*count),
                     DecrementCount(count) => memory.decrement_cell(*count),
@@ -242,10 +258,9 @@ impl Interpreter {
                     Input => memory.input_cell(),
                     Loop(exprs) => {
                         while memory.cells[memory.pointer] != 0 {
-                            execute(exprs, memory)
+                            execute(&exprs, memory)
                         }
                     }
-
                     MakeZero => {
                         memory.cells[memory.pointer] = 0;
                     }
@@ -309,7 +324,7 @@ impl Interpreter {
                 }
             }
         }
-        execute(&mut self.ast, &mut self.memory);
+        execute(&self.ast, &mut self.memory);
         self.memory.flush();
     }
 }
@@ -318,7 +333,7 @@ fn main() {
     let filepath = env::args().nth(1).unwrap();
     let filename = env::current_dir().unwrap().join(filepath);
     let content = std::fs::read_to_string(filename).unwrap();
-    let mut interpreter = Interpreter::new(content.chars().collect(), Memory::new());
+    let mut interpreter = Interpreter::new(content);
 
     let time = std::time::Instant::now();
 
