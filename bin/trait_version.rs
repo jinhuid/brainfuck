@@ -314,8 +314,6 @@ impl Interpreter {
                     }
                 }
             }
-            
-            return Box::new(LoopStruct(instructions, false));
         }
     }
 
