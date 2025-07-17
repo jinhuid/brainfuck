@@ -1,0 +1,6 @@
+tab_spaces = 2 
+# rustfmt.toml
+align_match_arms = true    # 对齐 match => 
+
+enum_discrim_align_threshold = 20
+struct_field_align_threshold = 20
